@@ -1,5 +1,6 @@
 // this function takes a geojson LineString Feature
-// and returns the features necessary to display the various components
+// and returns the mapboxGL layers necessary to display the various components
+// the layers all carry their own sources, so no need to add sources separately beforehand
 
 const getArrowLayers = (lineFeature, id) => {
   // calculate bearing
