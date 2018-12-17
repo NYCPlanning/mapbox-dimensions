@@ -16,44 +16,6 @@ function createVertex(parentId, coordinates, path, selected) {
   };
 }
 
-
-function getDisplayMeasurements(feature) {
-  // should log both metric and standard display strings for the current drawn feature
-
-
-  // metric calculation
-  const drawnLength = (lineDistance(feature) * 1000); // meters
-
-  let metricUnits = 'm';
-  let metricFormat = '0,0';
-  let metricMeasurement;
-
-  let standardUnits = 'ft';
-  let standardFormat = '0,0';
-  let standardMeasurement;
-
-  metricMeasurement = drawnLength;
-  if (drawnLength >= 1000) { // if over 1000 meters, upgrade metric
-    metricMeasurement = drawnLength / 1000;
-    metricUnits = 'km';
-    metricFormat = '0.00';
-  }
-
-  standardMeasurement = drawnLength * 3.28084;
-  if (standardMeasurement >= 5280) { // if over 5280 feet, upgrade standard
-    standardMeasurement /= 5280;
-    standardUnits = 'mi';
-    standardFormat = '0.00';
-  }
-
-  const displayMeasurements = {
-    metric: `${numeral(metricMeasurement).format(metricFormat)} ${metricUnits}`,
-    standard: `${numeral(standardMeasurement).format(standardFormat)} ${standardUnits}`,
-  };
-
-  return displayMeasurements;
-}
-
 const doubleClickZoom = {
   enable: (ctx) => {
     setTimeout(() => {
@@ -90,6 +52,7 @@ AnnotationMode.clickAnywhere = function(state, e) {
 // creates the final geojson point feature with a radius property
 // triggers draw.create
 AnnotationMode.onStop = function(state) {
+  console.log('STOP')
   doubleClickZoom.enable(this);
 
   this.activateUIButton();
@@ -100,6 +63,7 @@ AnnotationMode.onStop = function(state) {
   // remove last added coordinate
   state.line.removeCoordinate('0');
   if (state.line.isValid()) {
+    console.log('HERE')
     const lineGeoJson = state.line.toGeoJSON();
     // reconfigure the geojson line into a geojson point with a radius property
     const pointWithRadius = {
@@ -114,6 +78,7 @@ AnnotationMode.onStop = function(state) {
       },
     };
 
+    console.log('firing')
     this.map.fire('draw.create', {
       features: [pointWithRadius],
     });
@@ -124,6 +89,11 @@ AnnotationMode.onStop = function(state) {
 };
 
 AnnotationMode.toDisplayFeatures = function(state, geojson, display) {
+  // calculate label, append to properties
+  const label = `${(lineDistance(geojson) * 3280.84).toFixed(0)} ft`; // km to feet
+  state.line.properties.label = label;
+  geojson.properties.label = label;
+
   const isActiveLine = geojson.properties.id === state.line.id;
   geojson.properties.active = (isActiveLine) ? 'true' : 'false';
   if (!isActiveLine) return display(geojson);
@@ -132,7 +102,7 @@ AnnotationMode.toDisplayFeatures = function(state, geojson, display) {
   if (geojson.geometry.coordinates.length < 2) return null;
   geojson.properties.meta = 'feature';
 
-  // displays center vertex as a point feature
+  // displays first vertex as a point feature
   display(createVertex(
     state.line.id,
     geojson.geometry.coordinates[state.direction === 'forward' ? geojson.geometry.coordinates.length - 2 : 1],
@@ -143,15 +113,11 @@ AnnotationMode.toDisplayFeatures = function(state, geojson, display) {
   // displays the line as it is drawn
   display(geojson);
 
-  const displayMeasurements = getDisplayMeasurements(geojson);
-
   // create custom feature for the current pointer position
   const currentVertex = {
     type: 'Feature',
     properties: {
       meta: 'currentPosition',
-      radiusMetric: displayMeasurements.metric,
-      radiusStandard: displayMeasurements.standard,
       parent: state.line.id,
     },
     geometry: {
@@ -161,10 +127,7 @@ AnnotationMode.toDisplayFeatures = function(state, geojson, display) {
   };
   display(currentVertex);
 
-  // create custom feature for radius circlemarker
-  const center = geojson.geometry.coordinates[0];
-  const radiusInKm = lineDistance(geojson);
-  console.log(radiusInKm)
+  // display label
 
   return null;
 };

@@ -4,6 +4,7 @@ const map = new mapboxgl.Map({
     center: [-73.98, 40.750768],
     zoom: 16,
     hash: true,
+    fadeDuration: 50,
 });
 
 
@@ -24,22 +25,28 @@ const Draw = new MapboxDraw({
 
 $('.draw').on('click', () => {
   draw = map.addControl(Draw, 'top-left');
+  $('.draw').hide();
+  $('.done').show();
 });
 
-map.on('draw.create', ({ features }) => {
-  const line = features[0];
+map.on('draw.create', (e) => {
+  console.log(e)
 
-  console.log(line)
+  const line = Draw.getAll().features[0];
+  console.log(line);
 
-  const layers = buildDimensionLayers(line, line.properties.id);
+  draw = map.removeControl(Draw);
+  $('.draw').show();
+  $('.done').hide();
 
-  layers.forEach(layer => {
-    map.addLayer(layer);
-  });
+  if (line) {
+    const layers = buildDimensionLayers(line, line.id);
 
-  map.removeControl(Draw)
-})
-
+    layers.forEach(layer => {
+      map.addLayer(layer);
+    });
+  }
+});
 
 const testLine = {
     "type": "Feature",

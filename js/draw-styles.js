@@ -6,7 +6,7 @@ const drawStyles = [
     type: 'line',
     filter: ['all', ['==', '$type', 'LineString'], ['!=', 'mode', 'static']],
     paint: {
-      'line-color': 'blue',
+      'line-color': '#D96B27',
     }
   },
 
@@ -23,7 +23,7 @@ const drawStyles = [
       ],
       "text-justify": "center",
       "text-anchor": "center",
-    }
+    },
   },
 
   {
