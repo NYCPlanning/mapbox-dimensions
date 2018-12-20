@@ -88,7 +88,7 @@ const getCurve = (lineFeature) => {
     console.log('lineLength', lineLength)
     console.log('distanceFromCenter', distanceFromCenter)
     // y
-    const offsetLength = ((distanceFromCenter * distanceFromCenter) / (lineLength * (-1 * factor))) + (lineLength / factor) - ((.75/factor) * lineLength) ;
+    const offsetLength = ((distanceFromCenter * distanceFromCenter) / (lineLength * (-1 * factor))) + ((.25 * lineLength) / factor) ;
 
     const offsetBearing = lineBearing - 90;
 
