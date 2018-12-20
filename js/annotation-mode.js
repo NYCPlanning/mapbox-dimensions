@@ -1,4 +1,4 @@
-const { lineDistance, bearing } = turf;
+const { length, bearing, destination, along, distance } = turf;
 
 function createVertex(parentId, coordinates, path, selected) {
   return {
@@ -74,7 +74,7 @@ AnnotationMode.onStop = function(state) {
       },
       properties: {
         id: state.line.id,
-        label: `${(lineDistance(lineGeoJson) * 3280.8).toFixed(1)} ft`,
+        label: `${(length(lineGeoJson) * 3280.8).toFixed(1)} ft`,
       },
     };
 
@@ -90,7 +90,7 @@ AnnotationMode.onStop = function(state) {
 
 AnnotationMode.toDisplayFeatures = function(state, geojson, display) {
   // calculate label, append to properties
-  const label = `${(lineDistance(geojson) * 3280.84).toFixed(0)} ft`; // km to feet
+  const label = `${(length(geojson) * 3280.84).toFixed(0)} ft`; // km to feet
   state.line.properties.label = label;
   geojson.properties.label = label;
 
