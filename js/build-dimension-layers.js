@@ -87,7 +87,9 @@ const getCurve = (lineFeature) => {
     const distanceFromCenter = distance(originalCoordinate, center)
 
     // calculate the offset distance
-    const offsetDistance = ((distanceFromCenter * distanceFromCenter) / (lineLength * (-1 * factor))) + ((.25 * lineLength) / factor) ;
+    // (x^2 + .25l^2) / -fl
+    const offsetDistance = ((distanceFromCenter * distanceFromCenter) - (.25 * lineLength * lineLength)) / -(factor * lineLength)
+
 
     // calculate the bearing
     const offsetBearing = lineBearing - 90;
