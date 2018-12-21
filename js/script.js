@@ -23,24 +23,25 @@ const Draw = new MapboxDraw({
   }, MapboxDraw.modes)
 });
 
-$('.draw').on('click', () => {
+let drawMode = '';
+$('.draw-linear').on('click', () => {
   draw = map.addControl(Draw, 'top-left');
-  $('.draw').hide();
-  $('.done').show();
+  drawMode = 'linear';
+});
+
+$('.draw-curved').on('click', () => {
+  draw = map.addControl(Draw, 'top-left');
+  drawMode = 'curved';
 });
 
 map.on('draw.create', (e) => {
-  console.log(e)
 
   const line = Draw.getAll().features[0];
-  console.log(line);
 
   draw = map.removeControl(Draw);
-  $('.draw').show();
-  $('.done').hide();
 
   if (line) {
-    const layers = buildDimensionLayers(line, line.id);
+    const layers = buildDimensionLayers(line, drawMode);
 
     layers.forEach(layer => {
       map.addLayer(layer);
@@ -48,7 +49,8 @@ map.on('draw.create', (e) => {
   }
 });
 
-const testLine = {
+const testLine1 = {
+    "id": "foo",
     "type": "Feature",
     "properties": {
       label: '375 ft',
@@ -68,16 +70,38 @@ const testLine = {
     }
   }
 
+const testLine2 = {
+  "id": "bar",
+  "type": "Feature",
+  "properties": {
+    label: '200 ft',
+  },
+  "geometry": {
+    "type": "LineString",
+    "coordinates": [
+      [
+        -73.97778689861296,
+        40.75048781432228
+      ],
+      [
+        -73.97728264331818,
+        40.75110145517336
+      ]
+    ]
+  }
+}
+
 
 
 map.on('style.load', () => {
   map.loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Black_Arrow_Up.svg/240px-Black_Arrow_Up.svg.png', function(error, image) {
     if (error) throw error;
        map.addImage('arrow', image);
-       const layers = buildDimensionLayers(testLine, 'someId');
+       const layers1 = buildDimensionLayers(testLine1, 'curved');
+       const layers2 = buildDimensionLayers(testLine2, 'linear');
 
-       layers.forEach(layer => {
-         map.addLayer(layer);
-       });
+       layers1.forEach(layer => {map.addLayer(layer);});
+       layers2.forEach(layer => {map.addLayer(layer);});
+
   });
 });

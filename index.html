@@ -12,9 +12,16 @@
       width: 100%;
     }
 
-    .draw, .done {
+    .draw-linear {
       position: absolute;
       top: 100px;
+      left: 10px;
+      z-index: 5;
+    }
+
+    .draw-curved {
+      position: absolute;
+      top: 120px;
       left: 10px;
       z-index: 5;
     }
@@ -33,8 +40,8 @@
 
 <body>
   <div id="map">
-    <button class='draw'>Add a Dimension</button>
-    <button class='done'>Done</button>
+    <button class='draw-linear'>Add a Linear Dimension</button>
+    <button class='draw-curved'>Add a Curved Dimension</button>
   </div>
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.js'></script>
   <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.0.4/mapbox-gl-draw.js'></script>

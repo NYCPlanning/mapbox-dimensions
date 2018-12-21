@@ -2,7 +2,7 @@
 // and returns the mapboxGL layers necessary to display the various components
 // the layers all carry their own sources, so no need to add sources separately beforehand
 
-const getArrowLayers = (lineFeature, id) => {
+const getArrowLayers = (lineFeature, id, annotationType) => {
   // calculate bearing
   const { coordinates } = lineFeature.geometry;
   const lineBearing = bearing(coordinates[0], coordinates[1]);
@@ -50,7 +50,7 @@ const getArrowLayers = (lineFeature, id) => {
           coordinates: lineFeature.geometry.coordinates[lineFeature.geometry.coordinates.length - 1]
         },
         properties: {
-          rotation: lineBearing,
+          rotation: annotationType === 'linear' ? lineBearing : lineBearing + 50 ,
         }
       }
     },
@@ -61,97 +61,95 @@ const getArrowLayers = (lineFeature, id) => {
 }
 
 const getCurve = (lineFeature) => {
+  // takes a GeoJson LineString Feature with two vertices, interpolates an arc between them
+  // returns a new GeoJson LineString for the arc
 
   const { coordinates } = lineFeature.geometry;
-  const lineBearing = bearing(coordinates[0], coordinates[1]);
-  const lineLength = length(lineFeature)
-  console.log(lineLength)
+  const lineBearing = bearing(coordinates[0], coordinates[1]); // get bearing of original line
+  const lineLength = length(lineFeature) // get length of original line
 
-  const factor = 1;
-  const chunks = 20;
-  const chunkLength = lineLength / chunks;
-  console.log('CHunkLength', chunkLength)
-  console.log('chunkLen', chunkLength * chunks)
-  console.log('here', lineLength * 0.75)
+  const factor = 2; // factor determines the concavity of the arc
+  const chunks = 20; // number of segments the new arc LineString should have
+  const chunkLength = lineLength / chunks; // the geographic length of each chunk
 
-  const center = along(lineFeature, lineLength / 2).geometry.coordinates;
-  const newCoordinates = []
+  // here we interpolate points along the original line, and then offset each at a 90 degree angle off the original line
+  // the distance to offset depends on distance from the center (the center-most point will be the apex of the arc)
+  //
+
+  const center = along(lineFeature, lineLength / 2).geometry.coordinates; // get coordinates for the center of the original line
+  const newCoordinates = []; // empty array to push the offset coordinates to
 
   for (let i = 1; i < (chunks); i++) {
-    // for each vertice, get the distance along the line and the offset
-    console.log(i);
-    console.log(i * chunkLength);
+    // calculate the position of a new vertex along the original line
     const originalCoordinate = along(lineFeature, (i * chunkLength) ).geometry.coordinates
-    console.log(originalCoordinate)
-    // x distance from center
-    const distanceFromCenter = distance(originalCoordinate, center)
-    console.log('lineLength', lineLength)
-    console.log('distanceFromCenter', distanceFromCenter)
-    // y
-    const offsetLength = ((distanceFromCenter * distanceFromCenter) / (lineLength * (-1 * factor))) + ((.25 * lineLength) / factor) ;
 
+    // get the geographic distance from the center, this will be used to determine the offset
+    const distanceFromCenter = distance(originalCoordinate, center)
+
+    // calculate the offset distance
+    const offsetDistance = ((distanceFromCenter * distanceFromCenter) / (lineLength * (-1 * factor))) + ((.25 * lineLength) / factor) ;
+
+    // calculate the bearing
     const offsetBearing = lineBearing - 90;
 
-    console.log('offsetLength', offsetLength)
-
-    const newCoordinate = destination(originalCoordinate, offsetLength, offsetBearing).geometry.coordinates;
-    newCoordinates.push(newCoordinate)
-
+    // caclulate the offset vertex location
+    const newCoordinate = destination(originalCoordinate, offsetDistance, offsetBearing).geometry.coordinates;
+    newCoordinates.push(newCoordinate);
   };
 
+  // push all of the new coordinates into the original two-vertex line
   newCoordinates.forEach((coordinate, i) => {
     lineFeature.geometry.coordinates.splice(i + 1,0,coordinate);
   });
 
-
-  // // get point at 50% of line length
-  // const midPoint = along(lineFeature, length / 2)
-  // console.log(midPoint)
-  // const newVertex = destination(midPoint.geometry.coordinates, length / 10, lineBearing - 90).geometry.coordinates;
-  // console.log(newVertex)
-
-  // push new coordinate to lineFeature
   return lineFeature;
 }
 
-const buildDimensionLayers = (lineFeature, id) => {
+const buildDimensionLayers = (lineFeature, annotationType) => {
+  // takes a GeoJson LineString Feature with two vertices, and annotationType ('linear' or 'curved')
+
   // TODO validate the linefeature to make sure it has only two vertices,
   // and has a label property
+  const { id } = lineFeature;
 
+  // generate the line layer
   const lineLayer = {
     id: `${id}-dimension-line`,
     type: 'line',
     source: {
       type: 'geojson',
-      data: getCurve(lineFeature),
+      data: annotationType === 'linear' ? lineFeature : getCurve(lineFeature),
     },
   };
 
-  // const labelLayer = {
-  //   id: `${id}-dimension-line-label`,
-  //   type: 'symbol',
-  //   source: {
-  //     type: 'geojson',
-  //     data: lineFeature,
-  //   },
-  //   layout: {
-  //     "text-field": "{label}",
-  //     "symbol-placement": "line-center",
-  //     "text-offset": [
-  //       0,
-  //       -0.75
-  //     ],
-  //     "text-justify": "center",
-  //     "text-anchor": "center",
-  //     'text-size': 12
-  //   }
-  // };
+  // generate the label layer
+  const labelLayer = {
+    id: `${id}-dimension-line-label`,
+    type: 'symbol',
+    source: {
+      type: 'geojson',
+      data: lineFeature,
+    },
+    layout: {
+      "text-field": "{label}",
+      "symbol-placement": "line-center",
+      "text-offset": [
+        0,
+        -0.75
+      ],
+      "text-justify": "center",
+      "text-anchor": "center",
+      'text-size': 12
+    }
+  };
 
-  const arrowLayers = getArrowLayers(lineFeature, id);
+  // generate the arrow symbol layers
+  const arrowLayers = getArrowLayers(lineFeature, id, annotationType);
 
+  // return an array of all of the layers
   return [
     lineLayer,
-    // labelLayer,
+    labelLayer,
     ...arrowLayers
   ];
 }
