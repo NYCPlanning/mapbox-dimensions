@@ -34,6 +34,11 @@ $('.draw-curved').on('click', () => {
   drawMode = 'curved';
 });
 
+$('.draw-square').on('click', () => {
+  draw = map.addControl(Draw, 'top-left');
+  drawMode = 'square';
+});
+
 map.on('draw.create', (e) => {
 
   const line = Draw.getAll().features[0];
@@ -41,7 +46,12 @@ map.on('draw.create', (e) => {
   draw = map.removeControl(Draw);
 
   if (line) {
-    const layers = buildDimensionLayers(line, drawMode);
+    let layers
+    if (drawMode === 'square') {
+      layers = buildSquareLayers(line);
+    } else {
+      layers = buildDimensionLayers(line, drawMode);
+    }
 
     layers.forEach(layer => {
       map.addLayer(layer);
@@ -91,6 +101,25 @@ const testLine2 = {
   }
 }
 
+testLine3 = {
+  "id": "baz",
+  "type": "Feature",
+  "properties": {},
+  "geometry": {
+    "type": "LineString",
+    "coordinates": [
+      [
+        -73.97829115390776,
+        40.751621623115525
+      ],
+      [
+        -73.97832870483398,
+        40.751755728253336
+      ]
+    ]
+  }
+}
+
 
 
 map.on('style.load', () => {
@@ -99,9 +128,11 @@ map.on('style.load', () => {
        map.addImage('arrow', image);
        const layers1 = buildDimensionLayers(testLine1, 'curved');
        const layers2 = buildDimensionLayers(testLine2, 'linear');
+       const layers3 = buildSquareLayers(testLine3);
 
        layers1.forEach(layer => {map.addLayer(layer);});
        layers2.forEach(layer => {map.addLayer(layer);});
+       layers3.forEach(layer => {map.addLayer(layer);});
 
   });
 });

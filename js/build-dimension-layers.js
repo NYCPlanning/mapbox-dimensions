@@ -20,7 +20,7 @@ const getArrowLayers = (lineFeature, id, annotationType) => {
   }
 
   const startArrowLayer = {
-    id: `${id}-dimension-startarrow-symbol`,
+    id: `${id}-annotation-startarrow-symbol`,
     type: 'symbol',
     source: {
       type: 'geojson',
@@ -39,7 +39,7 @@ const getArrowLayers = (lineFeature, id, annotationType) => {
   };
 
   const endArrowLayer = {
-    id: `${id}-dimension-endarrow-symbol`,
+    id: `${id}-annotation-endarrow-symbol`,
     type: 'symbol',
     source: {
       type: 'geojson',
@@ -116,7 +116,7 @@ const buildDimensionLayers = (lineFeature, annotationType) => {
 
   // generate the line layer
   const lineLayer = {
-    id: `${id}-dimension-line`,
+    id: `${id}-annotation-line`,
     type: 'line',
     source: {
       type: 'geojson',
@@ -126,7 +126,7 @@ const buildDimensionLayers = (lineFeature, annotationType) => {
 
   // generate the label layer
   const labelLayer = {
-    id: `${id}-dimension-line-label`,
+    id: `${id}-annotation-line-label`,
     type: 'symbol',
     source: {
       type: 'geojson',

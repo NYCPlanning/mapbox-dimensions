@@ -26,9 +26,13 @@
       z-index: 5;
     }
 
-    .done {
-      display: none;
+    .draw-square {
+      position: absolute;
+      top: 140px;
+      left: 10px;
+      z-index: 5;
     }
+
   </style>
 
   <title>The HTML5 Herald</title>
@@ -42,6 +46,8 @@
   <div id="map">
     <button class='draw-linear'>Add a Linear Dimension</button>
     <button class='draw-curved'>Add a Curved Dimension</button>
+    <button class='draw-square'>Add a Square Annotation</button>
+
   </div>
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.js'></script>
   <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.0.4/mapbox-gl-draw.js'></script>
@@ -52,6 +58,7 @@
     integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
     crossorigin="anonymous"></script>
   <script src="js/build-dimension-layers.js"></script>
+  <script src="js/build-square-layers.js"></script>
   <script src="js/draw-styles.js"></script>
   <script src="js/annotation-mode.js"></script>
   <script src="js/script.js"></script>
